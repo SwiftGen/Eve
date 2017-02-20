@@ -1,6 +1,6 @@
 # Eve
 
-![SwiftGen's Eve logo](logo/eve-swift-2c.png)
+![SwiftGen's Eve logo](logo/logo-256.png)
 
 This repository allows you to automate the tasks necessary to develop SwiftGen.
 
