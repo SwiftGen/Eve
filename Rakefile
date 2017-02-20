@@ -4,6 +4,18 @@ require 'json'
 require 'net/http'
 require 'uri'
 
+desc 'Bootstrap this repository for development'
+task :bootstrap do
+  [:StencilSwiftKit, :SwiftGenKit, :SwiftGen, :templates].each do |repository|
+    next if Dir.exists? "#{repository}"
+
+    sh "git clone git@github.com:SwiftGen/#{repository}.git --recursive"
+    Dir.chdir("#{repository}") do
+      sh "git submodule update --init --recursive"
+    end
+  end
+end
+
 ## [ Release a new version ] ##################################################
 
 namespace :release do

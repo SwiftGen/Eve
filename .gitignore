@@ -1,2 +1,8 @@
 github_access_token
 danger_gh_api_token
+
+# SwiftGen repositories
+StencilSwiftKit/
+SwiftGen/
+SwiftGenKit/
+templates/
