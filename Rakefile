@@ -3,6 +3,7 @@ require 'yaml'
 require 'json'
 require 'net/http'
 require 'uri'
+require 'plist'
 
 desc 'Bootstrap this repository for development'
 task :bootstrap do
@@ -23,16 +24,18 @@ namespace :release do
   task :new => [:check_versions, 'swiftgen:tests', :github, :cocoapods, :homebrew]
 
   def podspec_version(file = 'SwiftGen')
-    Dir.chdir("SwiftGen") do
-      JSON.parse(`bundle exec pod ipc spec #{file}.podspec`)["version"]
-    end
+    JSON.parse(`bundle exec pod ipc spec SwiftGen/#{file}.podspec`)["version"]
+  end
+
+  def plist_version
+    Plist::parse_xml('SwiftGen/Sources/Info.plist')['CFBundleVersion']
   end
 
   def log_result(result, label, error_msg)
     if result
-      puts "#{label.ljust(25)} \u{2705}"
+      puts "#{label.ljust(30)} \u{2705}"
     else
-      puts "#{label.ljust(25)} \u{274C}  - #{error_msg}"
+      puts "#{label.ljust(30)} \u{274C}  - #{error_msg}"
     end
     result
   end
@@ -47,13 +50,16 @@ namespace :release do
 
     # Extract version from SwiftGen.podspec
     version = podspec_version
-    puts "#{'SwiftGen.podspec'.ljust(25)} \u{1F449}  #{version}"
+    puts "#{'SwiftGen.podspec'.ljust(30)} \u{1F449}  #{version}"
+
+    # Check if version matches the Info.plist
+    results << log_result(version == plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
 
     # Check if entry present in CHANGELOG
-    changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' CHANGELOG.md})
+    changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md})
     results << log_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
 
-    changelog_master = system(%q{grep -qi '^## Master' CHANGELOG.md})
+    changelog_master = system(%q{grep -qi '^## Master' SwiftGen/CHANGELOG.md})
     results << log_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
 
     exit 1 unless results.all?
