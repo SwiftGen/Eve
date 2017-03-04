@@ -1,8 +1,8 @@
 require 'octokit'
 
-namespace :labels do
+namespace :sync do
   desc 'Synchronize the github issue labels for all repositories'
-  task :sync, [:repo_slug, :dry_run] do |task, args|
+  task :labels, [:repo_slug, :dry_run] do |task, args|
     args.with_defaults(:dry_run => 'false')
 
     repo_slug = args[:repo_slug]

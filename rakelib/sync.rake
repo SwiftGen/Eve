@@ -2,7 +2,7 @@ namespace :sync do
   REPOSITORIES = [:StencilSwiftKit, :SwiftGenKit, :SwiftGen, :templates]
 
   desc 'Synchronize all files across repositories'
-  task :all => [:rakelib, :gitignore, :license]
+  task :all_files => [:rakelib, :gitignore, :license]
 
   task :gems do |task|
     REPOSITORIES.each do |repository|
