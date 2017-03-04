@@ -157,19 +157,19 @@ task :default => "release:new"
 namespace :swiftgen do
   task :tests do
     Dir.chdir("SwiftGen") do
-      sh "rake tests"
+      sh "rake xcode:tests"
     end
   end
 
   task :clean do
     Dir.chdir("SwiftGen") do
-      sh "rake clean"
+      sh "rake cli:clean"
     end
   end
 
   task :install do
     Dir.chdir("SwiftGen") do
-      sh "rake install"
+      sh "rake cli:install"
     end
   end
 end
