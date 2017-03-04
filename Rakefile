@@ -23,44 +23,27 @@ namespace :release do
   desc 'Create a new release on GitHub, CocoaPods and Homebrew'
   task :new => [:check_versions, 'swiftgen:tests', :github, :cocoapods, :homebrew]
 
-  def podspec_version(file = 'SwiftGen')
-    JSON.parse(`bundle exec pod ipc spec SwiftGen/#{file}.podspec`)["version"]
-  end
-
-  def plist_version
-    Plist::parse_xml('SwiftGen/Sources/Info.plist')['CFBundleVersion']
-  end
-
-  def log_result(result, label, error_msg)
-    if result
-      puts "#{label.ljust(30)} \u{2705}"
-    else
-      puts "#{label.ljust(30)} \u{274C}  - #{error_msg}"
-    end
-    result
-  end
-
   desc 'Check if all versions from the podspecs and CHANGELOG match'
   task :check_versions do
     results = []
 
     # Check if bundler is installed first, as we'll need it for the cocoapods task (and we prefer to fail early)
     `which bundler`
-    results << log_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
+    results << Utils.log_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
 
     # Extract version from SwiftGen.podspec
-    version = podspec_version
-    puts "#{'SwiftGen.podspec'.ljust(30)} \u{1F449}  #{version}"
+    version = Utils.podspec_version
+    Utils.log_info('SwiftGen.podspec', version)
 
     # Check if version matches the Info.plist
-    results << log_result(version == plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
+    results << Utils.log_result(version == Utils.plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
 
     # Check if entry present in CHANGELOG
     changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md})
-    results << log_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
+    results << Utils.log_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
 
     changelog_master = system(%q{grep -qi '^## Master' SwiftGen/CHANGELOG.md})
-    results << log_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
+    results << Utils.log_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
 
     exit 1 unless results.all?
 
@@ -71,7 +54,7 @@ namespace :release do
   desc 'Create a zip containing all the prebuilt binaries'
   task :zip => ['swiftgen:clean', 'swiftgen:install'] do
     `cp SwiftGen/LICENSE SwiftGen/README.md SwiftGen/CHANGELOG.md SwiftGen/build/swiftgen`
-    `cd SwiftGen/build/swiftgen; zip -r ../swiftgen-#{podspec_version}.zip .`
+    `cd SwiftGen/build/swiftgen; zip -r ../swiftgen-#{Utils.podspec_version}.zip .`
   end
 
   def post(url, content_type)
@@ -93,7 +76,7 @@ namespace :release do
 
   desc 'Upload the zipped binaries to a new GitHub release'
   task :github => :zip do
-    v = podspec_version
+    v = Utils.podspec_version
 
     changelog = `sed -n /'^## #{v}$'/,/'^## '/p CHANGELOG.md`.gsub(/^## .*$/,'').strip
     print_info "Releasing version #{v} on GitHub"
@@ -124,7 +107,7 @@ namespace :release do
   desc 'Release a new version on Homebrew and prepare a PR'
   task :homebrew do
     print_info "Updating Homebrew Formula"
-    tag = podspec_version
+    tag = Utils.podspec_version
     formulas_dir = `brew --repository homebrew/core`.chomp
     Dir.chdir(formulas_dir) do
       sh 'git checkout master'
