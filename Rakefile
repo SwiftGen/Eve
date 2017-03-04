@@ -29,21 +29,21 @@ namespace :release do
 
     # Check if bundler is installed first, as we'll need it for the cocoapods task (and we prefer to fail early)
     `which bundler`
-    results << Utils.log_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
+    results << Utils.table_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
 
     # Extract version from SwiftGen.podspec
     version = Utils.podspec_version
-    Utils.log_info('SwiftGen.podspec', version)
+    Utils.table_info('SwiftGen.podspec', version)
 
     # Check if version matches the Info.plist
-    results << Utils.log_result(version == Utils.plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
+    results << Utils.table_result(version == Utils.plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
 
     # Check if entry present in CHANGELOG
     changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md})
-    results << Utils.log_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
+    results << Utils.table_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
 
     changelog_master = system(%q{grep -qi '^## Master' SwiftGen/CHANGELOG.md})
-    results << Utils.log_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
+    results << Utils.table_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
 
     exit 1 unless results.all?
 
@@ -79,7 +79,7 @@ namespace :release do
     v = Utils.podspec_version
 
     changelog = `sed -n /'^## #{v}$'/,/'^## '/p CHANGELOG.md`.gsub(/^## .*$/,'').strip
-    print_info "Releasing version #{v} on GitHub"
+    Utils.print_header "Releasing version #{v} on GitHub"
     puts changelog
 
     json = post('https://api.github.com/repos/SwiftGen/SwiftGen/releases', 'application/json') do |req|
@@ -90,7 +90,7 @@ namespace :release do
     zipfile = "build/swiftgen-#{v}.zip"
     zipsize = File.size(zipfile)
 
-    print_info "Uploading ZIP (#{zipsize} bytes)"
+    Utils.print_header "Uploading ZIP (#{zipsize} bytes)"
     post(upload_url, 'application/zip') do |req|
       req.body_stream = File.open(zipfile, 'rb')
       req.add_field('Content-Length', zipsize)
@@ -100,13 +100,13 @@ namespace :release do
 
   desc 'pod trunk push SwiftGen to CocoaPods'
   task :cocoapods do
-    print_info "Pushing pod to CocoaPods Trunk"
+    Utils.print_header "Pushing pod to CocoaPods Trunk"
     sh 'bundle exec pod trunk push SwiftGen.podspec'
   end
 
   desc 'Release a new version on Homebrew and prepare a PR'
   task :homebrew do
-    print_info "Updating Homebrew Formula"
+    Utils.print_header "Updating Homebrew Formula"
     tag = Utils.podspec_version
     formulas_dir = `brew --repository homebrew/core`.chomp
     Dir.chdir(formulas_dir) do
@@ -119,12 +119,12 @@ namespace :release do
       new_formula = formula.gsub(%r(url "(.*)", :tag => ".*"), %Q(url "\\1", :tag => "#{tag}"))
       File.write(formula_file, new_formula)
 
-      print_info "Checking Homebrew formula..."
+      Utils.print_header "Checking Homebrew formula..."
       sh 'brew audit --strict --online swiftgen'
       sh 'brew upgrade swiftgen'
       sh 'brew test swiftgen'
 
-      print_info "Pushing to Homebrew"
+      Utils.print_header "Pushing to Homebrew"
       sh "git add #{formula_file}"
       sh "git commit -m 'swiftgen #{tag}'"
       sh "git push -u AliSoftware swiftgen-#{tag}"
