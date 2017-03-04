@@ -13,6 +13,7 @@ namespace :sync do
 
   task :rakelib => :gems do |task|
     REPOSITORIES.each do |repository|
+      FileUtils.rm_rf("#{repository}/rakelib")
       FileUtils.cp_r('common/rakelib', "#{repository}/")
     end
   end
