@@ -74,10 +74,13 @@ class String
     :bg_white => 47
   }
 
-  def format(*styles)
-    if `tput colors`.chomp.to_i >= 8
+  # only enable formatting if terminal supports it
+  if `tput colors`.chomp.to_i >= 8
+    def format(*styles)  
       styles.reduce("") { |r, s| r << "\e[#{FORMATTING[s]}m" } << "#{self}\e[0m"
-    else
+    end
+  else
+    def format(*styles)  
       self
     end
   end

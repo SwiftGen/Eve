@@ -67,7 +67,7 @@ namespace :release do
       http.request(req)
     end
     unless response.code == '201'
-      puts "Error: #{response.code} - #{response.message}"
+      Utils.print_error "Error: #{response.code} - #{response.message}"
       puts response.body
       exit 3
     end
