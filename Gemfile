@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 source 'https://rubygems.org'
 
-gem 'cocoapods', '1.2.0'
+gem 'cocoapods', '1.2.1'
 gem 'octokit'
 gem 'plist'
 gem 'xcpretty'
+
