@@ -35,7 +35,7 @@ namespace :submodules do
   desc 'Show status for submodules of each repo'
   task :status do
     Utils.print_header "Current 'templates' commit"
-    Dir.chdir('templates') { sh "git describe" }
+    Dir.chdir('templates') { sh "git describe --all && git describe --always" }
     submodules("git submodule status")
   end
 end
