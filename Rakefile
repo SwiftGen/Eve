@@ -72,7 +72,7 @@ namespace :release do
 
     # Check if submodule is aligned
     submodule_aligned = Dir.chdir('SwiftGen/Resources') do
-      sh "git fetch origin"
+      sh "git fetch origin >/dev/null"
       `git rev-parse origin/master`.chomp == `git rev-parse HEAD`.chomp
     end
     results << Utils.table_result(submodule_aligned, "Submodule on origin/master", "Please align the submodule to master")
