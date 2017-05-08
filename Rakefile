@@ -17,6 +17,29 @@ task :bootstrap do
   end
 end
 
+namespace :submodules do
+  def submodules(cmd)
+    [:SwiftGenKit, :SwiftGen].each do |repository|
+      Utils.print_header repository.to_s
+      Dir.chdir(repository.to_s) do
+        sh(cmd)
+      end
+    end
+  end
+
+  desc 'Synchronize all submodules to make them point to master'
+  task :master do
+    submodules("git submodule foreach 'git checkout master && git pull'")
+  end
+
+  desc 'Show status for submodules of each repo'
+  task :status do
+    Utils.print_header "Current 'templates' commit"
+    Dir.chdir('templates') { sh "git describe" }
+    submodules("git submodule status")
+  end
+end
+
 ## [ Release a new version ] ##################################################
 
 namespace :release do
