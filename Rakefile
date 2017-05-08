@@ -55,11 +55,27 @@ namespace :release do
     results << Utils.table_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
 
     # Extract version from SwiftGen.podspec
-    version = Utils.podspec_version
+    version = Utils.podspec_version('SwiftGen')
     Utils.table_info('SwiftGen.podspec', version)
+
+    # Check SwiftGenKit & StencilSwiftKit versions too
+    check_dep_versions = lambda do |pod|
+      lock_version = Utils.podfile_lock_version(pod)
+      pod_version = Utils.podspec_version(pod)
+      results << Utils.table_result(lock_version == pod_version, "#{pod.ljust(Utils::COLUMN_WIDTH-10)} (#{pod_version})", "Please update #{pod} to latest version in your Podfile")
+    end
+    check_dep_versions.call('SwiftGenKit')
+    check_dep_versions.call('StencilSwiftKit')
 
     # Check if version matches the Info.plist
     results << Utils.table_result(version == Utils.plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
+
+    # Check if submodule is aligned
+    submodule_aligned = Dir.chdir('SwiftGen/Resources') do
+      sh "git fetch origin"
+      `git rev-parse origin/master`.chomp == `git rev-parse HEAD`.chomp
+    end
+    results << Utils.table_result(submodule_aligned, "Submodule on origin/master", "Please align the submodule to master")
 
     # Check if entry present in CHANGELOG
     changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md})
