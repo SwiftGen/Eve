@@ -1,3 +1,5 @@
+require 'json'
+
 class Utils
   COLUMN_WIDTH = 30
 
