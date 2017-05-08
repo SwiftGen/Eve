@@ -117,7 +117,7 @@ namespace :release do
   task :github => :zip do
     v = Utils.podspec_version
 
-    changelog = `sed -n /'^## #{v}$'/,/'^## '/p CHANGELOG.md`.gsub(/^## .*$/,'').strip
+    changelog = `sed -n /'^## #{v}$'/,/'^## '/p SwiftGen/CHANGELOG.md`.gsub(/^## .*$/,'').strip
     Utils.print_header "Releasing version #{v} on GitHub"
     puts changelog
 
@@ -126,7 +126,7 @@ namespace :release do
     end
 
     upload_url = json['upload_url'].gsub(/\{.*\}/,"?name=swiftgen-#{v}.zip")
-    zipfile = "build/swiftgen-#{v}.zip"
+    zipfile = "SwiftGen/build/swiftgen-#{v}.zip"
     zipsize = File.size(zipfile)
 
     Utils.print_header "Uploading ZIP (#{zipsize} bytes)"
@@ -140,7 +140,9 @@ namespace :release do
   desc 'pod trunk push SwiftGen to CocoaPods'
   task :cocoapods do
     Utils.print_header "Pushing pod to CocoaPods Trunk"
-    sh 'bundle exec pod trunk push SwiftGen.podspec'
+    Dir.chdir('SwiftGen') do
+      sh 'bundle exec pod trunk push SwiftGen.podspec'
+    end
   end
 
   desc 'Release a new version on Homebrew and prepare a PR'

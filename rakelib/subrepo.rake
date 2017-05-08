@@ -2,7 +2,7 @@ namespace :swiftgen do
   desc 'Run tests on SwiftGen repo'
   task :tests do
     Dir.chdir("SwiftGen") do
-      sh "rake xcode:tests"
+      sh "rake xcode:test"
     end
   end
 

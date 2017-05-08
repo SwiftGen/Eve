@@ -3,7 +3,7 @@ require 'json'
 class Utils
   COLUMN_WIDTH = 30
 
-  def self.podspec_version(pod = 'SwiftGen/SwiftGen')
+  def self.podspec_version(pod = 'SwiftGen')
     JSON.parse(`bundle exec pod ipc spec #{pod}/#{pod}.podspec`)["version"]
   end
 
