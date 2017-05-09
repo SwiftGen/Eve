@@ -149,6 +149,7 @@ namespace :release do
   task :homebrew do
     Utils.print_header "Updating Homebrew Formula"
     tag = Utils.podspec_version
+    revision = Dir.chdir('SwiftGen') { `git rev-list -1 #{tag}`.chomp }
     formulas_dir = `brew --repository homebrew/core`.chomp
     Dir.chdir(formulas_dir) do
       sh 'git checkout master'
@@ -157,9 +158,11 @@ namespace :release do
 
       formula_file = "#{formulas_dir}/Formula/swiftgen.rb"
       formula = File.read(formula_file)
-      new_formula = formula.gsub(%r(url "(.*)", :tag => ".*"), %Q(url "\\1", :tag => "#{tag}"))
-      File.write(formula_file, new_formula)
 
+      new_formula = formula
+        .gsub(%r(:tag => ".*"), %Q(:tag => "#{tag}"))
+        .gsub(%r(:revision => ".*"), %Q(:revision => "#{revision}"))
+      File.write(formula_file, new_formula)
       Utils.print_header "Checking Homebrew formula..."
       sh 'brew audit --strict --online swiftgen'
       sh 'brew upgrade swiftgen'
