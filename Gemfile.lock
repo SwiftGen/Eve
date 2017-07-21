@@ -7,7 +7,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    addressable (2.5.0)
+    addressable (2.5.1)
       public_suffix (~> 2.0, >= 2.0.2)
     claide (1.0.1)
     cocoapods (1.2.1)
@@ -45,7 +45,7 @@ GEM
     cocoapods-try (1.1.0)
     colored2 (3.1.1)
     escape (0.0.4)
-    faraday (0.11.0)
+    faraday (0.12.2)
       multipart-post (>= 1.2, < 3)
     fourflusher (2.0.1)
     fuzzy_match (2.0.4)
@@ -57,7 +57,7 @@ GEM
     nanaimo (0.2.3)
     nap (1.1.0)
     netrc (0.7.8)
-    octokit (4.6.2)
+    octokit (4.7.0)
       sawyer (~> 0.8.0, >= 0.5.3)
     plist (3.2.0)
     public_suffix (2.0.5)
@@ -87,4 +87,4 @@ DEPENDENCIES
   xcpretty
 
 BUNDLED WITH
-   1.14.5
+   1.14.6
