@@ -177,7 +177,7 @@ namespace :release do
     Utils.print_header "Updating Homebrew Formula"
     tag = Utils.podspec_version
     revision = Dir.chdir('SwiftGen') { `git rev-list -1 #{tag}`.chomp }
-    formulas_dir = `brew --repository homebrew/core`.chomp
+    formulas_dir = Bundler.with_clean_env { `brew --repository homebrew/core`.chomp }
     Dir.chdir(formulas_dir) do
       sh 'git checkout master'
       sh 'git pull'
@@ -191,9 +191,11 @@ namespace :release do
         .gsub(%r(:revision => ".*"), %Q(:revision => "#{revision}"))
       File.write(formula_file, new_formula)
       Utils.print_header "Checking Homebrew formula..."
-      sh 'brew audit --strict --online swiftgen'
-      sh 'brew upgrade swiftgen'
-      sh 'brew test swiftgen'
+      Bundler.with_clean_env do
+        sh 'brew audit --strict --online swiftgen'
+        sh 'brew upgrade swiftgen'
+        sh 'brew test swiftgen'
+      end
 
       Utils.print_header "Pushing to Homebrew"
       sh "git add #{formula_file}"
