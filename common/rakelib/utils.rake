@@ -1,8 +1,9 @@
 # Used constants:
-# none
+# - MIN_XCODE_VERSION
 
 require 'json'
 require 'octokit'
+require 'pathname'
 
 class Utils
   COLUMN_WIDTH = 30
@@ -17,7 +18,7 @@ class Utils
   # run a command using xcrun and xcpretty if applicable
   def self.run(cmd, task, subtask = '', xcrun: false, formatter: :raw)
     commands = xcrun ? [*cmd].map { |cmd|
-      "#{version_select} xcrun #{cmd}"
+      "#{@@version_select} xcrun #{cmd}"
     } : [*cmd]
 
     case formatter
@@ -122,18 +123,29 @@ class Utils
 
   # select the xcode version we want/support
   def self.version_select
-    version = '8.*'
-    xcodes = `mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode' && kMDItemVersion = '#{version}'"`.chomp.split("\n")
-    if xcodes.empty?
-      raise "\n[!!!] SwiftGen requires Xcode #{version}, but we were not able to find it. If it's already installed update your Spotlight index with 'mdimport /Applications/Xcode*'\n\n"
-    end
-    
-    # Order by version and get the latest one
-    vers = lambda { |path| `mdls -name kMDItemVersion -raw "#{path}"` }
-    latest_xcode_version = xcodes.sort { |p1, p2| vers.call(p1) <=> vers.call(p2) }.last
-    %Q(DEVELOPER_DIR="#{latest_xcode_version}/Contents/Developer")
+    @@version_select ||= compute_developer_dir(MIN_XCODE_VERSION)
   end
   private_class_method :version_select
+
+  def self.compute_developer_dir(min_version)
+    # if current Xcode already fulfills min version don't force DEVELOPER_DIR=…
+    current_xcode = Pathname.new(`xcode-select -p`).parent.parent
+    current_xcode_version = `mdls -name kMDItemVersion -raw #{current_xcode}`.chomp
+    return "" if current_xcode_version.to_f >= min_version
+    
+    # Get all available Xcodes, order by version, get the latest one
+    xcodes = `mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode'"`.chomp.split("\n")
+    versions = xcodes.map { |path| { :vers => `mdls -name kMDItemVersion -raw "#{path}"`, :path => path } }
+    latest_xcode = versions.sort { |p1, p2| p1[:vers] <=> p2[:vers] }.last
+
+    # Check if it's at least the right version
+    unless latest_xcode[:vers].to_f >= min_version
+      raise "\n[!!!] SwiftGen requires Xcode #{MIN_XCODE_VERSION}, but we were not able to find it. If it's already installed update your Spotlight index with 'mdimport /Applications/Xcode*'\n\n"
+    end
+
+    return %Q(DEVELOPER_DIR="#{latest_xcode[:path]}/Contents/Developer")
+  end
+  private_class_method :compute_developer_dir
 end
 
 class String
