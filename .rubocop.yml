@@ -1,3 +1,8 @@
+AllCops:
+  TargetRubyVersion: 2.0
+  Exclude:
+    - SwiftGenKit/Tests/Resources/**/*
+    - SwiftGen/Resources/**/*
 
 Style/HashSyntax:
   Enabled: false
