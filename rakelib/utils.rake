@@ -1,5 +1,7 @@
 require 'json'
 
+# Utility functions to extract versionning info and logs messages
+#
 class Utils
   COLUMN_WIDTH = 30
 
@@ -49,6 +51,8 @@ class Utils
   end
 end
 
+# Colorization support for Strings
+#
 class String
   def to_bool
     return true if self =~ /^(true|t|yes|y|1)$/i

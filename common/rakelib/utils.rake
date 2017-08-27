@@ -5,6 +5,8 @@ require 'json'
 require 'octokit'
 require 'pathname'
 
+# Utility functions to run Xcode commands, extract versionning info and logs messages
+#
 class Utils
   COLUMN_WIDTH = 30
 
@@ -16,11 +18,12 @@ class Utils
   # :to_string : run using backticks and return output
 
   # run a command using xcrun and xcpretty if applicable
-  def self.run(cmd, task, subtask = '', xcrun: false, formatter: :raw)
-    commands = xcrun ? [*cmd].map do |cmd|
-      "#{@@version_select} xcrun #{cmd}"
-    end : [*cmd]
-
+  def self.run(command, task, subtask = '', xcrun: false, formatter: :raw)
+    commands = if xcrun
+                 [*command].map { |cmd| "#{version_select} xcrun #{cmd}" }
+               else
+                 [*command]
+               end
     case formatter
     when :xcpretty then xcpretty(commands, task, subtask)
     when :raw then plain(commands, task, subtask)
@@ -122,7 +125,7 @@ class Utils
 
   # select the xcode version we want/support
   def self.version_select
-    @@version_select ||= compute_developer_dir(MIN_XCODE_VERSION)
+    @@version_select ||= compute_developer_dir(MIN_XCODE_VERSION) # rubocop:disable Style/ClassVars
   end
   private_class_method :version_select
 
@@ -147,6 +150,8 @@ class Utils
   private_class_method :compute_developer_dir
 end
 
+# Colorization support for Strings
+#
 class String
   # colorization
   FORMATTING = {

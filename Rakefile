@@ -10,7 +10,7 @@ namespace :repos do
   desc 'Bootstrap this repository for development'
   task :bootstrap do
     REPOS.each do |repository|
-      next if Dir.exists? repository.to_s
+      next if Dir.exist? repository.to_s
 
       sh "git clone git@github.com:SwiftGen/#{repository}.git --recursive"
       Dir.chdir(repository.to_s) do
@@ -125,7 +125,7 @@ namespace :release do
 
   def post(url, content_type)
     uri = URI.parse(url)
-    req = Net::HTTP::Post.new(uri, initheader = { 'Content-Type' => content_type })
+    req = Net::HTTP::Post.new(uri, initheader: { 'Content-Type' => content_type })
     yield req if block_given?
     req.basic_auth 'AliSoftware', File.read('.apitoken').chomp
 
@@ -187,8 +187,8 @@ namespace :release do
       formula = File.read(formula_file)
 
       new_formula = formula
-                    .gsub(/:tag => ".*"/, %Q(:tag => "#{tag}"))
-                    .gsub(/:revision => ".*"/, %Q(:revision => "#{revision}"))
+                    .gsub(/:tag => ".*"/, %(:tag => "#{tag}"))
+                    .gsub(/:revision => ".*"/, %(:revision => "#{revision}"))
       File.write(formula_file, new_formula)
       Utils.print_header 'Checking Homebrew formula...'
       Bundler.with_clean_env do

@@ -58,7 +58,7 @@ namespace :sync do
           puts "  👍  `#{label.name}`"
         else
           puts "  🎨  `#{label.name}` (#{label.color} => #{color})"
-          client.update_label(repo_slug, label.name, { :color => color }) unless dry_run
+          client.update_label(repo_slug, label.name, :color => color) unless dry_run
         end
       end
     end
