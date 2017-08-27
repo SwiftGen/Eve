@@ -79,7 +79,11 @@ namespace :release do
 
     # Check if bundler is installed first, as we'll need it for the cocoapods task (and we prefer to fail early)
     `which bundler`
-    results << Utils.table_result($CHILD_STATUS.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
+    results << Utils.table_result(
+      $CHILD_STATUS.success?,
+      'Bundler installed',
+      'Please install bundler using `gem install bundler` and run `bundle install` first.'
+    )
 
     # Extract version from SwiftGen.podspec
     version = Utils.podspec_version('SwiftGen')
@@ -89,27 +93,47 @@ namespace :release do
     check_dep_versions = lambda do |pod|
       lock_version = Utils.podfile_lock_version(pod)
       pod_version = Utils.podspec_version(pod)
-      results << Utils.table_result(lock_version == pod_version, "#{pod.ljust(Utils::COLUMN_WIDTH - 10)} (#{pod_version})", "Please update #{pod} to latest version in your Podfile")
+      results << Utils.table_result(
+        lock_version == pod_version,
+        "#{pod.ljust(Utils::COLUMN_WIDTH - 10)} (#{pod_version})",
+        "Please update #{pod} to latest version in your Podfile"
+      )
     end
     check_dep_versions.call('SwiftGenKit')
     check_dep_versions.call('StencilSwiftKit')
 
     # Check if version matches the Info.plist
-    results << Utils.table_result(version == Utils.plist_version, 'Info.plist version matches', 'Please update the version numbers in the Info.plist file')
+    results << Utils.table_result(
+      version == Utils.plist_version,
+      'Info.plist version matches',
+      'Please update the version numbers in the Info.plist file'
+    )
 
     # Check if submodule is aligned
     submodule_aligned = Dir.chdir('SwiftGen/Resources') do
       sh 'git fetch origin >/dev/null'
       `git rev-parse origin/master`.chomp == `git rev-parse HEAD`.chomp
     end
-    results << Utils.table_result(submodule_aligned, 'Submodule on origin/master', 'Please align the submodule to master')
+    results << Utils.table_result(
+      submodule_aligned,
+      'Submodule on origin/master',
+      'Please align the submodule to master'
+    )
 
     # Check if entry present in CHANGELOG
     changelog_entry = system("grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md")
-    results << Utils.table_result(changelog_entry, 'CHANGELOG, Entry added', "Please add an entry for #{version} in CHANGELOG.md")
+    results << Utils.table_result(
+      changelog_entry,
+      'CHANGELOG, Entry added',
+      "Please add an entry for #{version} in CHANGELOG.md"
+    )
 
     changelog_master = system("grep -qi '^## Master' SwiftGen/CHANGELOG.md")
-    results << Utils.table_result(!changelog_master, 'CHANGELOG, No master', 'Please remove entry for master in CHANGELOG')
+    results << Utils.table_result(
+      !changelog_master,
+      'CHANGELOG, No master',
+      'Please remove entry for master in CHANGELOG'
+    )
 
     exit 1 unless results.all?
 

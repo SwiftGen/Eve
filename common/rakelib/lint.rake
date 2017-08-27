@@ -9,7 +9,8 @@ namespace :lint do
     next if check_version
 
     unless system('tty >/dev/null')
-      puts "warning: Unable to install SwiftLint #{SWIFTLINT_VERSION} without a terminal. Please run 'bundle exec rake lint:install' from a terminal."
+      puts "warning: Unable to install SwiftLint #{SWIFTLINT_VERSION} without a terminal." \
+        "Please run 'bundle exec rake lint:install' from a terminal."
       next
     end
 

@@ -101,7 +101,8 @@ class Utils
     command = [*cmd].join(' && ')
 
     if ENV['CI']
-      Rake.sh "set -o pipefail && (#{command}) | tee \"#{ENV['CIRCLE_ARTIFACTS']}/#{name}_raw.log\" | bundle exec xcpretty --color --report junit --output \"#{ENV['CIRCLE_TEST_REPORTS']}/xcode/#{name}.xml\""
+      Rake.sh "set -o pipefail && (#{command}) | tee \"#{ENV['CIRCLE_ARTIFACTS']}/#{name}_raw.log\" | " \
+        "bundle exec xcpretty --color --report junit --output \"#{ENV['CIRCLE_TEST_REPORTS']}/xcode/#{name}.xml\""
     elsif system('which xcpretty > /dev/null')
       Rake.sh "set -o pipefail && (#{command}) | bundle exec xcpretty -c"
     else
@@ -142,7 +143,8 @@ class Utils
 
     # Check if it's at least the right version
     unless latest_xcode[:vers].to_f >= min_version
-      raise "\n[!!!] SwiftGen requires Xcode #{MIN_XCODE_VERSION}, but we were not able to find it. If it's already installed update your Spotlight index with 'mdimport /Applications/Xcode*'\n\n"
+      raise "\n[!!!] SwiftGen requires Xcode #{MIN_XCODE_VERSION}, but we were not able to find it. " \
+        "If it's already installed update your Spotlight index with 'mdimport /Applications/Xcode*'\n\n"
     end
 
     %(DEVELOPER_DIR="#{latest_xcode[:path]}/Contents/Developer")
