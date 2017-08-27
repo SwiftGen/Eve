@@ -129,7 +129,7 @@ class Utils
   def self.compute_developer_dir(min_version)
     # if current Xcode already fulfills min version don't force DEVELOPER_DIR=...
     current_xcode = Pathname.new(`xcode-select -p`).parent.parent
-    current_xcode_version = `mdls -name kMDItemVersion -raw #{current_xcode}`.chomp
+    current_xcode_version = `mdls -name kMDItemVersion -raw "#{current_xcode}"`.chomp
     return '' if current_xcode_version.to_f >= min_version
 
     # Get all available Xcodes, order by version, get the latest one

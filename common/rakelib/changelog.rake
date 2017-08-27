@@ -43,10 +43,7 @@ namespace :changelog do
       wrong_links = line.scan(links)
                         .reject do |m|
                       slug = m[0] || "SwiftGen/#{current_repo}"
-                      num = m[1]
-                      url_slug = m[2]
-                      url_num = m[4]
-                      (slug == url_slug) && (num == url_num)
+                      (slug == m[2]) && (m[1] == m[4])
                     end.map do |m|
         " - Line #{idx + 1}, link text is #{m[0]}##{m[1]} but links points to #{m[2]}##{m[4]}"
       end
