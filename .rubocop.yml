@@ -1,9 +1,3 @@
-AllCops:
-  Exclude:
-    - SwiftGen/**/*
-    - SwiftGenKit/**/*
-    - StencilSwiftKit/**/*
-    - templates/**/*
 
 Style/HashSyntax:
   Enabled: false
