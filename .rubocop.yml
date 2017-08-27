@@ -1,0 +1,20 @@
+AllCops:
+  TargetRubyVersion: 2.0
+  Exclude:
+    - SwiftGenKit/Tests/Resources/**/*
+    - SwiftGen/Resources/**/*
+
+Style/HashSyntax:
+  Enabled: false
+
+Metrics/AbcSize:
+  Max: 24
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 140
+
+Metrics/MethodLength:
+  Max: 20

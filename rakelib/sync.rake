@@ -1,30 +1,30 @@
 namespace :sync do
-  REPOSITORIES = [:StencilSwiftKit, :SwiftGenKit, :SwiftGen, :templates]
+  REPOSITORIES = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
 
   desc 'Synchronize all files across repositories'
-  task :all_files => [:rakelib, :gitignore, :license]
+  task :all_files => %i[rakelib gitignore license]
 
-  task :gems do |task|
+  task :gems do |_task|
     REPOSITORIES.each do |repository|
       FileUtils.cp('common/Gemfile', "#{repository}/")
       FileUtils.cp('common/Gemfile.lock', "#{repository}/")
     end
   end
 
-  task :rakelib => :gems do |task|
+  task :rakelib => :gems do |_task|
     REPOSITORIES.each do |repository|
       FileUtils.rm_rf("#{repository}/rakelib")
       FileUtils.cp_r('common/rakelib', "#{repository}/")
     end
   end
 
-  task :gitignore do |task|
+  task :gitignore do |_task|
     REPOSITORIES.each do |repository|
       FileUtils.cp('common/gitignore', "#{repository}/.gitignore")
     end
   end
 
-  task :license do |task|
+  task :license do |_task|
     REPOSITORIES.each do |repository|
       FileUtils.cp('LICENSE', "#{repository}/")
     end

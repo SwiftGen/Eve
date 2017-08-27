@@ -6,15 +6,15 @@ require 'uri'
 require 'plist'
 
 namespace :repos do
-  REPOS = [:StencilSwiftKit, :SwiftGenKit, :SwiftGen, :templates].freeze
+  REPOS = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
   desc 'Bootstrap this repository for development'
   task :bootstrap do
     REPOS.each do |repository|
-      next if Dir.exists? "#{repository}"
+      next if Dir.exist? repository.to_s
 
       sh "git clone git@github.com:SwiftGen/#{repository}.git --recursive"
-      Dir.chdir("#{repository}") do
-        sh "git submodule update --init --recursive"
+      Dir.chdir(repository.to_s) do
+        sh 'git submodule update --init --recursive'
       end
     end
   end
@@ -46,7 +46,7 @@ end
 
 namespace :submodules do
   def submodules(cmd)
-    [:SwiftGenKit, :SwiftGen].each do |repository|
+    %i[SwiftGenKit SwiftGen].each do |repository|
       Utils.print_header repository.to_s
       Dir.chdir(repository.to_s) do
         sh(cmd)
@@ -62,8 +62,8 @@ namespace :submodules do
   desc 'Show status for submodules of each repo'
   task :status do
     Utils.print_header "Current 'templates' commit"
-    Dir.chdir('templates') { sh "git describe --all && git describe --always" }
-    submodules("git submodule status")
+    Dir.chdir('templates') { sh 'git describe --all && git describe --always' }
+    submodules('git submodule status')
   end
 end
 
@@ -79,7 +79,11 @@ namespace :release do
 
     # Check if bundler is installed first, as we'll need it for the cocoapods task (and we prefer to fail early)
     `which bundler`
-    results << Utils.table_result( $?.success?, 'Bundler installed', 'Please install bundler using `gem install bundler` and run `bundle install` first.')
+    results << Utils.table_result(
+      $CHILD_STATUS.success?,
+      'Bundler installed',
+      'Please install bundler using `gem install bundler` and run `bundle install` first.'
+    )
 
     # Extract version from SwiftGen.podspec
     version = Utils.podspec_version('SwiftGen')
@@ -89,32 +93,52 @@ namespace :release do
     check_dep_versions = lambda do |pod|
       lock_version = Utils.podfile_lock_version(pod)
       pod_version = Utils.podspec_version(pod)
-      results << Utils.table_result(lock_version == pod_version, "#{pod.ljust(Utils::COLUMN_WIDTH-10)} (#{pod_version})", "Please update #{pod} to latest version in your Podfile")
+      results << Utils.table_result(
+        lock_version == pod_version,
+        "#{pod.ljust(Utils::COLUMN_WIDTH - 10)} (#{pod_version})",
+        "Please update #{pod} to latest version in your Podfile"
+      )
     end
     check_dep_versions.call('SwiftGenKit')
     check_dep_versions.call('StencilSwiftKit')
 
     # Check if version matches the Info.plist
-    results << Utils.table_result(version == Utils.plist_version, "Info.plist version matches", "Please update the version numbers in the Info.plist file")
+    results << Utils.table_result(
+      version == Utils.plist_version,
+      'Info.plist version matches',
+      'Please update the version numbers in the Info.plist file'
+    )
 
     # Check if submodule is aligned
     submodule_aligned = Dir.chdir('SwiftGen/Resources') do
-      sh "git fetch origin >/dev/null"
+      sh 'git fetch origin >/dev/null'
       `git rev-parse origin/master`.chomp == `git rev-parse HEAD`.chomp
     end
-    results << Utils.table_result(submodule_aligned, "Submodule on origin/master", "Please align the submodule to master")
+    results << Utils.table_result(
+      submodule_aligned,
+      'Submodule on origin/master',
+      'Please align the submodule to master'
+    )
 
     # Check if entry present in CHANGELOG
-    changelog_entry = system(%Q{grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md})
-    results << Utils.table_result(changelog_entry, "CHANGELOG, Entry added", "Please add an entry for #{version} in CHANGELOG.md")
+    changelog_entry = system("grep -q '^## #{Regexp.quote(version)}$' SwiftGen/CHANGELOG.md")
+    results << Utils.table_result(
+      changelog_entry,
+      'CHANGELOG, Entry added',
+      "Please add an entry for #{version} in CHANGELOG.md"
+    )
 
-    changelog_master = system(%q{grep -qi '^## Master' SwiftGen/CHANGELOG.md})
-    results << Utils.table_result(!changelog_master, "CHANGELOG, No master", 'Please remove entry for master in CHANGELOG')
+    changelog_master = system("grep -qi '^## Master' SwiftGen/CHANGELOG.md")
+    results << Utils.table_result(
+      !changelog_master,
+      'CHANGELOG, No master',
+      'Please remove entry for master in CHANGELOG'
+    )
 
     exit 1 unless results.all?
 
     print "Release version #{version} [Y/n]? "
-    exit 2 unless (STDIN.gets.chomp == 'Y')
+    exit 2 unless STDIN.gets.chomp == 'Y'
   end
 
   desc 'Create a zip containing all the prebuilt binaries'
@@ -125,7 +149,7 @@ namespace :release do
 
   def post(url, content_type)
     uri = URI.parse(url)
-    req = Net::HTTP::Post.new(uri, initheader = {'Content-Type' => content_type})
+    req = Net::HTTP::Post.new(uri, initheader: { 'Content-Type' => content_type })
     yield req if block_given?
     req.basic_auth 'AliSoftware', File.read('.apitoken').chomp
 
@@ -144,7 +168,7 @@ namespace :release do
   task :github => :zip do
     v = Utils.podspec_version
 
-    changelog = `sed -n /'^## #{v}$'/,/'^## '/p SwiftGen/CHANGELOG.md`.gsub(/^## .*$/,'').strip
+    changelog = `sed -n /'^## #{v}$'/,/'^## '/p SwiftGen/CHANGELOG.md`.gsub(/^## .*$/, '').strip
     Utils.print_header "Releasing version #{v} on GitHub"
     puts changelog
 
@@ -152,7 +176,7 @@ namespace :release do
       req.body = { :tag_name => v, :name => v, :body => changelog, :draft => false, :prerelease => false }.to_json
     end
 
-    upload_url = json['upload_url'].gsub(/\{.*\}/,"?name=swiftgen-#{v}.zip")
+    upload_url = json['upload_url'].gsub(/\{.*\}/, "?name=swiftgen-#{v}.zip")
     zipfile = "SwiftGen/build/swiftgen-#{v}.zip"
     zipsize = File.size(zipfile)
 
@@ -166,7 +190,7 @@ namespace :release do
 
   desc 'pod trunk push SwiftGen to CocoaPods'
   task :cocoapods do
-    Utils.print_header "Pushing pod to CocoaPods Trunk"
+    Utils.print_header 'Pushing pod to CocoaPods Trunk'
     Dir.chdir('SwiftGen') do
       sh 'bundle exec pod trunk push SwiftGen.podspec'
     end
@@ -174,7 +198,7 @@ namespace :release do
 
   desc 'Release a new version on Homebrew and prepare a PR'
   task :homebrew do
-    Utils.print_header "Updating Homebrew Formula"
+    Utils.print_header 'Updating Homebrew Formula'
     tag = Utils.podspec_version
     revision = Dir.chdir('SwiftGen') { `git rev-list -1 #{tag}`.chomp }
     formulas_dir = Bundler.with_clean_env { `brew --repository homebrew/core`.chomp }
@@ -187,17 +211,17 @@ namespace :release do
       formula = File.read(formula_file)
 
       new_formula = formula
-        .gsub(%r(:tag => ".*"), %Q(:tag => "#{tag}"))
-        .gsub(%r(:revision => ".*"), %Q(:revision => "#{revision}"))
+                    .gsub(/:tag => ".*"/, %(:tag => "#{tag}"))
+                    .gsub(/:revision => ".*"/, %(:revision => "#{revision}"))
       File.write(formula_file, new_formula)
-      Utils.print_header "Checking Homebrew formula..."
+      Utils.print_header 'Checking Homebrew formula...'
       Bundler.with_clean_env do
         sh 'brew audit --strict --online swiftgen'
         sh 'brew upgrade swiftgen'
         sh 'brew test swiftgen'
       end
 
-      Utils.print_header "Pushing to Homebrew"
+      Utils.print_header 'Pushing to Homebrew'
       sh "git add #{formula_file}"
       sh "git commit -m 'swiftgen #{tag}'"
       sh "git push -u AliSoftware swiftgen-#{tag}"
@@ -206,4 +230,4 @@ namespace :release do
   end
 end
 
-task :default => "release:new"
+task :default => 'release:new'

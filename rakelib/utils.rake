@@ -1,10 +1,12 @@
 require 'json'
 
+# Utility functions to extract versionning info and logs messages
+#
 class Utils
   COLUMN_WIDTH = 30
 
   def self.podspec_version(pod = 'SwiftGen')
-    JSON.parse(`bundle exec pod ipc spec #{pod}/#{pod}.podspec`)["version"]
+    JSON.parse(`bundle exec pod ipc spec #{pod}/#{pod}.podspec`)['version']
   end
 
   def self.podfile_lock_version(pod)
@@ -15,7 +17,7 @@ class Utils
   end
 
   def self.plist_version
-    Plist::parse_xml('SwiftGen/Sources/Info.plist')['CFBundleVersion']
+    Plist.parse_xml('SwiftGen/Sources/Info.plist')['CFBundleVersion']
   end
 
   # print a header
@@ -49,11 +51,13 @@ class Utils
   end
 end
 
+# Colorization support for Strings
+#
 class String
   def to_bool
-    return true if self =~ (/^(true|t|yes|y|1)$/i)
-    return false if self.empty? || self =~ (/^(false|f|no|n|0)$/i)
-    raise ArgumentError.new "invalid value: #{self}"
+    return true if self =~ /^(true|t|yes|y|1)$/i
+    return false if empty? || self =~ /^(false|f|no|n|0)$/i
+    raise ArgumentError, "invalid value: #{self}"
   end
 
   # colorization
@@ -81,15 +85,15 @@ class String
     :bg_magenta => 45,
     :bg_cyan => 46,
     :bg_white => 47
-  }
+  }.freeze
 
   # only enable formatting if terminal supports it
   if `tput colors`.chomp.to_i >= 8
-    def format(*styles)  
-      styles.reduce("") { |r, s| r << "\e[#{FORMATTING[s]}m" } << "#{self}\e[0m"
+    def format(*styles)
+      styles.reduce('') { |r, s| r << "\e[#{FORMATTING[s]}m" } << "#{self}\e[0m"
     end
   else
-    def format(*styles)  
+    def format(*_styles)
       self
     end
   end
