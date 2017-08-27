@@ -2,18 +2,18 @@ require 'octokit'
 
 namespace :sync do
   desc 'Synchronize the github issue labels for all repositories'
-  task :labels, [:repo_slug, :dry_run] do |task, args|
+  task :labels, %i[repo_slug dry_run] do |_task, args|
     args.with_defaults(:dry_run => 'false')
 
     repo_slug = args[:repo_slug]
     dry_run = args[:dry_run].to_bool
 
     unless repo_slug
-      puts "[!] A repo slug is required"
-      puts "Usage: rake labels:sync[User/RepoName,true|false]"
+      puts '[!] A repo slug is required'
+      puts 'Usage: rake labels:sync[User/RepoName,true|false]'
       exit 2
     end
-    
+
     begin
       token = File.read('github_access_token')
     rescue
@@ -38,13 +38,13 @@ namespace :sync do
       'type: enhancement' => '84b6eb',
       'type: internal' => 'f9d0c4',
       'type: question' => 'cc317c',
-      'change: breaking' => 'b60205',
+      'change: breaking' => 'b60205'
     }.freeze
 
     missing_labels = LABELS.keys.dup
     extra_labels = []
 
-    puts "Retrieving existing labels…"
+    puts 'Retrieving existing labels…'
     labels = client.labels(repo_slug)
 
     # Update existing labels
@@ -69,11 +69,11 @@ namespace :sync do
       client.add_label(repo_slug, label_name, LABELS[label_name]) unless dry_run
     end
 
-    puts "Done."
+    puts 'Done.'
 
     # List unexpected labels
     unless extra_labels.empty?
-      puts "Extra labels found:"
+      puts 'Extra labels found:'
       puts extra_labels.map { |label| " - #{label.name}" }.join("\n")
     end
   end
