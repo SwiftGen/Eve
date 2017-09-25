@@ -4,6 +4,7 @@ require 'json'
 require 'net/http'
 require 'uri'
 require 'plist'
+require 'English'
 
 namespace :repos do
   REPOS = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
