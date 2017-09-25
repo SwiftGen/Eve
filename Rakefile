@@ -150,7 +150,8 @@ namespace :release do
 
   def post(url, content_type)
     uri = URI.parse(url)
-    req = Net::HTTP::Post.new(uri, initheader: { 'Content-Type' => content_type })
+    req = Net::HTTP::Post.new(uri)
+    req['Content-Type'] = content_type unless content_type.nil?
     yield req if block_given?
     req.basic_auth 'AliSoftware', File.read('.apitoken').chomp
 
@@ -201,7 +202,10 @@ namespace :release do
   task :homebrew do
     Utils.print_header 'Updating Homebrew Formula'
     tag = Utils.podspec_version
-    revision = Dir.chdir('SwiftGen') { `git rev-list -1 #{tag}`.chomp }
+    revision = Dir.chdir('SwiftGen') do
+      sh 'git pull --tags'
+      `git rev-list -1 #{tag}`.chomp
+    end
     formulas_dir = Bundler.with_clean_env { `brew --repository homebrew/core`.chomp }
     Dir.chdir(formulas_dir) do
       sh 'git checkout master'
