@@ -2,7 +2,7 @@ namespace :sync do
   REPOSITORIES = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
 
   desc 'Synchronize all files across repositories'
-  task :all_files => %i[rakelib gitignore license]
+  task :all_files => %i[rakelib gitignore rubocop license]
 
   task :gems do |_task|
     REPOSITORIES.each do |repository|
@@ -21,6 +21,12 @@ namespace :sync do
   task :gitignore do |_task|
     REPOSITORIES.each do |repository|
       FileUtils.cp('common/gitignore', "#{repository}/.gitignore")
+    end
+  end
+
+  task :rubocop do |_task|
+    REPOSITORIES.each do |repository|
+      FileUtils.cp('.rubocop.yml', "#{repository}/")
     end
   end
 
