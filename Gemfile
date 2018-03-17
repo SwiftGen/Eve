@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'cocoapods', '1.3.1'
+gem 'cocoapods', '~> 1.4'
 gem 'octokit', '~> 4.7'
 gem 'plist', '~> 3.2'
 gem 'rake'
