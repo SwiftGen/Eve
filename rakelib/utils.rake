@@ -17,7 +17,7 @@ class Utils
   end
 
   def self.plist_version
-    Plist.parse_xml('SwiftGen/Sources/Info.plist')['CFBundleVersion']
+    Plist.parse_xml('SwiftGen/Sources/SwiftGen/Info.plist')['CFBundleVersion']
   end
 
   # print a header
