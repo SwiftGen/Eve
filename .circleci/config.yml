@@ -1,0 +1,63 @@
+defaults:
+  - &default-config
+    parallelism: 1
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      BUNDLE_PATH: vendor/bundle
+    macos:
+      xcode: "9.3.0"
+    shell: /bin/bash --login -eo pipefail
+  - &prepare-storage
+    run:
+      name: Create directories for artifacts and reports
+      command: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
+  - &restore-gems
+    restore_cache:
+      keys:
+        - gems-{{ checksum "Gemfile.lock" }}
+        - gems-
+  - &install-gems
+    run:
+      name: Bundle install
+      command: bundle check || bundle install
+      environment:
+        BUNDLE_JOBS: 4
+        BUNDLE_RETRY: 3
+  - &store-gems
+    save_cache:
+      key: gems-{{ checksum "Gemfile.lock" }}
+      paths:
+        - vendor/bundle
+  - &store-artifacts
+    store_artifacts:
+      path: /tmp/circleci-artifacts
+
+    
+version: 2
+jobs:
+  bootstrap:
+    <<: *default-config
+    steps:
+      - *prepare-storage
+      - checkout
+      - *restore-gems
+      - *install-gems
+      - *store-gems
+      - run:
+          name: Bootstrap subrepos
+          command: bundle exec rake repos:bootstrap
+      - run:
+          name: Check subrepos status
+          command: bundle exec rake repos:status
+      - run:
+          name: Sync common files
+          command: bundle exec rake sync:all_files
+      - *store-artifacts
+
+
+workflows:
+  version: 2
+  bootstrap:
+    jobs:
+      - bootstrap
