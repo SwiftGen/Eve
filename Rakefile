@@ -7,16 +7,13 @@ require 'plist'
 require 'English'
 
 namespace :repos do
-  REPOS = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
+  REPOS = %i[StencilSwiftKit SwiftGen].freeze
   desc 'Bootstrap this repository for development'
   task :bootstrap do
     REPOS.each do |repository|
       next if Dir.exist? repository.to_s
 
       sh "git clone git@github.com:SwiftGen/#{repository}.git --recursive"
-      Dir.chdir(repository.to_s) do
-        sh 'git submodule update --init --recursive'
-      end
     end
   end
 
@@ -42,29 +39,6 @@ namespace :repos do
   desc 'git checkout master each repo'
   task :master do
     each_repo { puts `git checkout master` }
-  end
-end
-
-namespace :submodules do
-  def submodules(cmd)
-    %i[SwiftGenKit SwiftGen].each do |repository|
-      Utils.print_header repository.to_s
-      Dir.chdir(repository.to_s) do
-        sh(cmd)
-      end
-    end
-  end
-
-  desc 'Synchronize all submodules to make them point to master'
-  task :master do
-    submodules("git submodule foreach 'git checkout master && git pull'")
-  end
-
-  desc 'Show status for submodules of each repo'
-  task :status do
-    Utils.print_header "Current 'templates' commit"
-    Dir.chdir('templates') { sh 'git describe --all && git describe --always' }
-    submodules('git submodule status')
   end
 end
 
