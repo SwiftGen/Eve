@@ -1,5 +1,5 @@
 namespace :sync do
-  REPOSITORIES = %i[StencilSwiftKit SwiftGenKit SwiftGen templates].freeze
+  REPOSITORIES = %i[StencilSwiftKit SwiftGen].freeze
 
   desc 'Synchronize all files across repositories'
   task :all_files => %i[rakelib gitignore rubocop license]
