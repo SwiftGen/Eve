@@ -4,14 +4,14 @@
 
 This repository allows you to automate the tasks necessary to develop SwiftGen.
 
-In detail, the aim is to be able to do the following tasks from a centralised location using a centralized Rakefile:
+In detail, the aim is to be able to do the following tasks from a centralized location using a centralized Rakefile:
 
 * Clone all SwiftGen repositories.
 * Check the status of each repository globally, like:
   * Scanning for dirty working copies
-  * Listing all open issues and PRs accross all repositores
+  * Listing all open issues and PRs across all repositories
   * …
-* Propagate consistent settings accross all repositories, like:
+* Propagate consistent settings across all repositories, like:
   * Ensure all repos use the same `Dangerfile`
   * Ensure all repos use the same `.swiftlint.yml`
   * …
